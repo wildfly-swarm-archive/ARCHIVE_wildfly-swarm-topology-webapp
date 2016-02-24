@@ -28,7 +28,7 @@ var topology = (function() {
       }, settings);
 
       path = path || '/';
-      settings.url = '//' + nextServer.endpoint + path;
+      settings.url = nextServer.endpoint + path;
 
       // Set relevant headers
       if (settings.method === 'POST') {
