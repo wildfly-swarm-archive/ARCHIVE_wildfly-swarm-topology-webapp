@@ -17,6 +17,7 @@ package org.wildfly.swarm.topology.webapp.runtime;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -148,13 +149,18 @@ public class TopologySSEServlet extends HttpServlet {
         while (keyIter.hasNext()) {
             String key = keyIter.next();
             json.append("  ").append('"').append(key).append('"').append(": [");
+            List<Topology.Entry> list = map.get(key);
+            Iterator<Topology.Entry> listIter = list.iterator();
             String proxyContext = getServletContext().getInitParameter(key + "-proxy");
             if (proxyContext != null) {
-                populateEndpointAndTagsJson(json, proxyContext,
-                        Collections.singletonList(req.isSecure() ? "https" : "http"));
+                List<String> tags = new ArrayList<>();
+                tags.add(req.isSecure() ? "https" : "http");
+                while (listIter.hasNext()) {
+                    Topology.Entry server = listIter.next();
+                    tags.add(server.getAddress() + ":" + server.getPort());
+                }
+                populateEndpointAndTagsJson(json, proxyContext, tags);
             } else {
-                List<Topology.Entry> list = map.get(key);
-                Iterator<Topology.Entry> listIter = list.iterator();
                 while (listIter.hasNext()) {
                     Topology.Entry server = listIter.next();
                     String endpoint = server.getAddress() + ":" + server.getPort();
